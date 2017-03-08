@@ -22,7 +22,7 @@ import io.riddles.linesofaction.game.state.LoaState;
 public class LoaProcessor extends SimpleProcessor<LoaState, LoaPlayer> {
 
     private LoaMoveDeserializer moveDeserializer;
-    private int winnerByOpponentBreaking = -1;  // If a bot returns the wrong input, opponent wins
+    private int winnerByOpponentError = -1;  // If a bot returns the wrong input, opponent wins
 
     public LoaProcessor(PlayerProvider<LoaPlayer> playerProvider) {
         super(playerProvider);
@@ -34,15 +34,15 @@ public class LoaProcessor extends SimpleProcessor<LoaState, LoaPlayer> {
         int maxRounds = LoaEngine.configuration.getInt("maxRounds");
         ArrayList<Integer> connectedPlayerIds = state.getBoard().getConnectedPlayerIds();
 
-        return  this.winnerByOpponentBreaking >= 0 ||
+        return  this.winnerByOpponentError >= 0 ||
                 state.getRoundNumber() >= maxRounds ||
                 connectedPlayerIds.size() > 0;
     }
 
     @Override
     public Integer getWinnerId(LoaState state) {
-        if (this.winnerByOpponentBreaking >= 0) {
-            return this.winnerByOpponentBreaking;
+        if (this.winnerByOpponentError >= 0) {
+            return this.winnerByOpponentError;
         }
 
         ArrayList<Integer> connectedPlayerIds = state.getBoard().getConnectedPlayerIds();
@@ -66,7 +66,6 @@ public class LoaProcessor extends SimpleProcessor<LoaState, LoaPlayer> {
         for (LoaPlayerState playerState : inputState.getPlayerStates()) {
             LoaPlayer player = getPlayer(playerState.getPlayerId());
             nextState = createNextStateForPlayer(nextState, player, roundNumber);
-            nextState.getBoard().dump();
 
             if (hasGameEnded(nextState)) break;
         }
@@ -86,7 +85,7 @@ public class LoaProcessor extends SimpleProcessor<LoaState, LoaPlayer> {
         movePerformedState.getBoard().processMove(move, playerId);
 
         if (move.getException() != null) {
-            this.winnerByOpponentBreaking = 2 - (playerId + 1);
+            this.winnerByOpponentError = 2 - (playerId + 1);
         }
 
         LoaPlayerState playerState = movePerformedState.getPlayerStateById(playerId);
