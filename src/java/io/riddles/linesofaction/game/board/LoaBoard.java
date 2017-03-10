@@ -30,13 +30,14 @@ public class LoaBoard extends Board<LoaPiece> {
         super(width, height);
         this.playerCount = playerCount;
         this.fields = new LoaPiece[width][height];
-        this.setFieldsFromString(fieldInput);
+        setFieldsFromString(fieldInput);
     }
 
     public LoaBoard(LoaBoard board) {
         super(board.getWidth(), board.getHeight());
         this.playerCount = board.getPlayerCount();
-        this.fields = board.getFieldsCopy();
+        this.fields = new LoaPiece[board.getWidth()][board.getHeight()];
+        setFieldsFromString(board.toString());
     }
 
     @Override
@@ -152,12 +153,10 @@ public class LoaBoard extends Board<LoaPiece> {
     }
 
     public void processMove(LoaMove move, int playerId) {
+
+        if (move.getException() != null) return;
+
         LoaPiece piece;
-
-        if (move.getException() != null) {
-            return;
-        }
-
         try {
             piece = getPieceFromMove(move, playerId);
             validateMove(piece, move);
@@ -167,21 +166,6 @@ public class LoaBoard extends Board<LoaPiece> {
         }
 
         movePiece(move, piece);
-    }
-
-    private LoaPiece[][] getFieldsCopy() {
-        LoaPiece[][] copy = new LoaPiece[this.width][this.height];
-
-        for (int y = 0; y < this.height; y++) {
-            for (int x = 0; x < this.width; x++) {
-                if (this.fields[x][y] != null) {
-                    copy[x][y] = new LoaPiece(this.fields[x][y]);
-                    addNeighbors(copy[x][y]);
-                }
-            }
-        }
-
-        return copy;
     }
 
     private LoaPiece getPieceFromMove(LoaMove move, int playerId) throws InvalidMoveException {
